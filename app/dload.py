@@ -192,11 +192,18 @@ def cachedownload(bookid, start=None, end=None):
     for num in downlist:
         novel = pq('{}{}.html'.format(baseurl, num), headers=header, encoding="utf-8")
         txt = novel('#content')
-        models.NovelContent.objects.filter(novelid__srcurl=baseurl, srcnum=num).update(content=txt, status=1)
-        time.sleep(3)
+        if txt:
+            models.NovelContent.objects.filter(novelid__srcurl=baseurl, srcnum=num).update(content=txt, status=1)
+            time.sleep(3)
 
 
 def downloadone(bookid, chapterid):
+    """
+    递归下载指定网页，当访问一个新的网页，默认没有内容，因此调用本函数下载。当然，如果有内容直接返回内容。
+    :param bookid: 书籍编号
+    :param chapterid: 章节编号
+    :return: 返回章节内容
+    """
     chapterquery = models.NovelContent.objects.filter(status=1, id=chapterid, novelid=bookid). \
         values('title', 'content', 'preurl', 'nexturl', 'novelid', 'id')
 
@@ -208,6 +215,11 @@ def downloadone(bookid, chapterid):
 
 
 def searchbook(bookname):
+    """
+    搜索书籍，目前只能搜索一家网站
+    :param bookname: 书名
+    :return: 返回网页内容
+    """
     searchurl = 'http://zhannei.baidu.com/cse/search?s=5199337987683747968&ie=utf-8&q={}'. \
         format(request.quote(bookname))
     html = pq(searchurl, headers=header, encoding="utf-8")
@@ -216,6 +228,12 @@ def searchbook(bookname):
 
 
 def readrecord(bookid, chapterid):
+    """
+    将阅读进度记录下来，以供网页的继续阅读功能使用
+    :param bookid:
+    :param chapterid:
+    :return:
+    """
     recordquery = models.ReadProgress.objects.filter(novelid=bookid)
     if recordquery:
         recordquery.update(chapterid_id=chapterid)
@@ -224,5 +242,6 @@ def readrecord(bookid, chapterid):
 
 
 def downloadtxt(bookid):
+    # todo：提供epub电子书下载
     downtxt = models.NovelContent.objects.filter(status=1, novelid=bookid).values_list('title', 'content')
     print(downtxt)
