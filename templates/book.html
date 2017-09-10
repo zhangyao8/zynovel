@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no">
+    <meta name="format-detection" content="telephone=no">
+	<meta name="format-detection" content="address=no">
+    <title>{{ name }}</title>
+    <link rel="stylesheet" type="text/css" href='/static/css/style.css' />
+</head>
+
+<body>
+    {% csrf_token %}
+    <header class="hd-bar">
+       <a href="#" class="btn-hd-back"><i></i><span class="blind">返回</span></a>
+       <a href="#" class="btn-hd-back" id="historyBack"><i></i><span class="blind">返回</span></a>
+       <h1>{{ name }}</h1>
+       <a href="/book/" onclick="" class="btn-hd">书架</a>
+    </header>
+
+    <div id="ct" role="main">
+        <div class="piracy-detail-wrap">
+            <div class="piracy-cover">
+                <img src="/{{ imgurl }}" height="133" width="97" alt="{{ name }}">
+            </div>
+
+            <div class="piracy-detail">
+                <h2>{{ name }}</h2>
+                更新时间：{{ updatetime|date:"Y-m-d H:i:s" }}
+                <br> 来源：{{ srcurl }}
+                <br><a href="javascript:void(0);" onclick="updateBook('{{ srcurl }}')">更新</a>
+            </div>
+    </div>
+
+        <div class="book-read-wrap">
+            <div class="piracy-btn-wrap" id="readAndShelfAera">
+                <a href="{{ chapterid_id  }}.html" onclick="startRead('')">继续阅读</a>
+                <a href="javascript:void(0)" id="cacheall" onclick="cacheChapter()">全本缓存</a>
+            </div>
+
+            <p class="book-read-info" style="cursor:pointer;" id="bookInfo">{{ content }}</p>
+        </div>
+
+        <div class="gap"></div>
+
+        <section>
+            <h2 class="section-tit"><a href="javascript:void(0);" onclick="reverseChapter()" class="btn-tit-sort" id="reverse">倒序</a>目录<span>共xxx章</span></h2>
+
+            <ol class="chapter-lst" id="chapterList">
+                {% for item in chapterquery %}
+                    <li><a href="/book/{{ id }}/{{ item.1 }}.html" class="chapter-tab">{{ item.0 }}</a></li>
+                {% endfor %}
+            </ol>
+          </section>
+    </div>
+    <script type="text/javascript" src="/static/js/jquery-3.2.1.min.js"></script>
+    <script type="text/javascript">
+        var csrftoken = jQuery("[name=csrfmiddlewaretoken]").val();
+
+        function csrfSafeMethod(method) {
+            // these HTTP methods do not require CSRF protection
+            return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+        }
+        $.ajaxSetup({
+            beforeSend: function(xhr, settings) {
+                if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+                    xhr.setRequestHeader("X-CSRFToken", csrftoken);
+                }
+            }
+        });
+        function cacheChapter() {
+            var bookid = {{ id }};
+            $.post('/manager/cachechapter/',{'bookid': bookid },function(callback){
+                console.log(callback);
+                $('#cacheall').text(callback);
+            });
+        }
+
+        function updateBook(arg) {
+{#            console.log(arg);#}
+            $.post('/manager/',{'url': arg },function(callback){
+                console.log(callback);
+                location.reload();
+            });
+        }
+
+        function reverseChapter(){
+            var list = document.getElementById("chapterList");
+            var node_list = list.childNodes;
+            var fragment = document.createDocumentFragment();
+            for(var i=node_list.length-1; i>=0; i--){
+               fragment.appendChild(node_list[i]);
+            }
+            list.appendChild(fragment);
+        }
+    </script>
+</body>
+</html>

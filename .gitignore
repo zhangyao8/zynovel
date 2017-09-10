@@ -93,8 +93,3 @@ ENV/
 
 .gitignore
 .idea/
-app/
-manage.py
-static/
-templates/
-zynovel/

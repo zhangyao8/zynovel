@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no">
+    <meta name="format-detection" content="telephone=no">
+	<meta name="format-detection" content="address=no">
+    <title>书架</title>
+    <link rel="stylesheet" type="text/css" href='/static/css/style.css' />
+</head>
+
+<body>
+    <header class="hd-bar">
+       <a href="#" class="btn-hd-back"><i></i><span class="blind">返回</span></a>
+       <a href="#" class="btn-hd-back" id="historyBack"><i></i><span class="blind">返回</span></a>
+       <h1>目录</h1>
+       <a href="/manager/" onclick="" class="btn-hd" style="width: 75px;">书籍管理</a>
+    </header>
+    <section>
+        <ol class="chapter-lst" id="chapterList">
+            {% for item in shelfquery %}
+                <li><a href="/book/{{ item.id }}/" class="chapter-tab">{{ item.name }}</a></li>
+            {% endfor %}
+        </ol>
+    </section>
+</body>
+</html>

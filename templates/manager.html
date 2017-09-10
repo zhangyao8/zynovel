@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no">
+    <meta name="format-detection" content="telephone=no">
+	<meta name="format-detection" content="address=no">
+    <title>添加书籍</title>
+</head>
+<body>
+    <div>
+        {% csrf_token %}
+        <label for="book">
+            书籍名称:
+            <input id="book" type="text" name="bookname" style="width:200px;"/>
+            <input type="button" value="搜索" onclick="search();"/>
+        </label>
+    </div>
+    <div id="searchresult"></div>
+    <div>
+        <label for="url">
+            书籍地址:
+            <input id="url" type="text" name="bookurl" style="width:200px;"/>
+            <input type="button" value="追更" onclick="add();"/>
+        </label>
+    </div>
+
+    <script type="text/javascript" src="/static/js/jquery-3.2.1.min.js"></script>
+    <script type="text/javascript">
+        var csrftoken = jQuery("[name=csrfmiddlewaretoken]").val();
+
+        function csrfSafeMethod(method) {
+            // these HTTP methods do not require CSRF protection
+            return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+        }
+
+        $.ajaxSetup({
+            beforeSend: function(xhr, settings) {
+                if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+                    xhr.setRequestHeader("X-CSRFToken", csrftoken);
+                }
+            }
+        });
+        function search() {
+            var bookname = $('#book').val();
+            $.post('/manager/search/',{'bookname': bookname },function(callback){
+                $('#searchresult').html(callback);
+                $('#url').val($('a').attr('href'));
+            });
+        }
+
+        function add(arg) {
+            var url = $('#url').val();
+            $.post('/manager/add/',{'url': url },function(callback){
+                console.log(callback);
+                window.location.href = callback;
+            });
+        }
+    </script>
+</body>
+</html>
