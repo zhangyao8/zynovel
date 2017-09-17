@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from django.shortcuts import HttpResponse
+from django.http import HttpResponseRedirect
 from app import dload
 from app import models
 from django.contrib.auth.decorators import login_required
@@ -64,6 +65,6 @@ def cachechapter(request):
 
 
 @login_required
-def downbook(request, bookid):
-    dload.downloadtxt(bookid)
-    return HttpResponse('完成')
+def downbook(request, bookid, chapterid):
+    bookname = dload.downloadepub(bookid, chapterid)
+    return HttpResponseRedirect('http://www.zyops.com/zynovel/{0}/{0}.epub'.format(bookname))

@@ -4,6 +4,7 @@ from pyquery import PyQuery as pq
 from app import models
 from urllib import request
 from django.utils import timezone
+from app import epub
 import re
 import os
 import time
@@ -241,7 +242,18 @@ def readrecord(bookid, chapterid):
         models.ReadProgress.objects.create(novelid_id=bookid, chapterid_id=chapterid)
 
 
-def downloadtxt(bookid):
-    # todo：提供epub电子书下载
-    downtxt = models.NovelContent.objects.filter(status=1, novelid=bookid).values_list('title', 'content')
-    print(downtxt)
+def downloadepub(bookid, chapterid):
+    """
+    提供epub电子书下载
+    :param bookid:  书id
+    :param chapterid:  章节id
+    :return: 返回书名，用于拼接下载地址
+    """
+    # 从数据库读取需要的小说内容
+    htmlquery = models.NovelContent.objects.filter(status=1, novelid=bookid, id__gte=chapterid).values_list('title',
+                                                                                                            'content')
+    # 读取书名和简介
+    (bookname, description) = models.Novel.objects.filter(id=bookid).values_list('name', 'content').first()
+    f = epub.Epub(bookname, description, htmlquery)
+    f.createpub()
+    return bookname

@@ -27,5 +27,5 @@ urlpatterns = [
     url(r'^book/$', views.bookshelf),
     url(r'^book/(?P<bookid>\d+)/$', views.book),
     url(r'^book/(?P<bookid>\d+)/(?P<chapterid>\d+).html', views.chapter),
-    url(r'^downbook/(?P<bookid>\d+)/$', views.downbook),
+    url(r'^downbook/(?P<bookid>\d+)/(?P<chapterid>\d+)/$', views.downbook),
 ]
