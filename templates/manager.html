@@ -5,9 +5,16 @@
     <meta name="viewport" content="width=device-width,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no">
     <meta name="format-detection" content="telephone=no">
 	<meta name="format-detection" content="address=no">
-    <title>添加书籍</title>
+    <title>书籍管理</title>
+    <link rel="stylesheet" type="text/css" href='/static/css/style.css' />
 </head>
 <body>
+    <header class="hd-bar">
+       <a href="/book/" class="btn-hd-back"><i></i><span class="blind">返回</span></a>
+       <a href="/book/" class="btn-hd-back" id="historyBack"><i></i><span class="blind">返回</span></a>
+       <h1>目录</h1>
+       <a href="/admin/" onclick="" class="btn-hd" style="width: 75px;">后台管理</a>
+    </header>
     <div>
         {% csrf_token %}
         <label for="book">
@@ -45,7 +52,7 @@
             var bookname = $('#book').val();
             $.post('/manager/search/',{'bookname': bookname },function(callback){
                 $('#searchresult').html(callback);
-                $('#url').val($('a').attr('href'));
+                $('#url').val($('.result-game-item-title-link').attr('href'));
             });
         }
 
