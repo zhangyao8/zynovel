@@ -19,7 +19,8 @@
     <section>
         <ol class="chapter-lst" id="chapterList">
             {% for item in shelfquery %}
-                <li><a href="/book/{{ item.id }}/" class="chapter-tab">{{ item.name }}</a></li>
+                <li><a href="/book/{{ item.id }}/" class="chapter-tab">
+                    {{ item.name }}  {{ item.updatetime|date:"Y-m-d H:i:s" }}</a></li>
             {% endfor %}
         </ol>
     </section>

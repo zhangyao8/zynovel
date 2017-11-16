@@ -93,3 +93,4 @@ ENV/
 
 .gitignore
 .idea/
+static/books/

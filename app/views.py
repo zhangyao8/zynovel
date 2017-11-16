@@ -38,7 +38,7 @@ def search(request):
 
 @login_required
 def bookshelf(request):
-    shelfquery = models.Novel.objects.filter(status=1).values('id', 'name')
+    shelfquery = models.Novel.objects.filter(status=1).values('id', 'name', 'updatetime')
     return render(request, 'bookshelf.html', {'shelfquery': shelfquery})
 
 
