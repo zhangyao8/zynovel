@@ -72,7 +72,9 @@ def gethtml(baseurl):
         imgurl = 'static/images/novel/{}.jpg'.format(stringrandom(name))
         filepath = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), os.path.normpath(imgurl))
         if not os.path.isfile(filepath):
-            imgpath = html('img').attr("src")
+            imgpath = html('#fmimg img').attr("src")
+            if not imgpath:
+                imgpath = html("meta[property='og:image']").attr('content')
             request.urlretrieve(imgpath, filepath)
 
         novel_dict = {'name': name,
