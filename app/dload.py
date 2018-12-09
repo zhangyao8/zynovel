@@ -9,6 +9,7 @@ import re
 import os
 import time
 import hashlib
+import traceback
 
 header = {
     'user-agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, '
@@ -26,6 +27,18 @@ def stringrandom(string):
     hash1.update(bytes(string, encoding='utf-8'))
     return hash1.hexdigest()
 
+
+def htmlencode(url):
+    """
+    不同的网站的编码不同，判断一下
+    :param url:
+    :return:
+    """
+    if 'www.xbiquge6.com' in url:
+        html = pq(url, headers=header, encoding="utf8")
+    else:
+        html = pq(url, headers=header, encoding="gbk")
+    return html
 
 def getnum(href):
     """
@@ -47,49 +60,53 @@ def gethtml(baseurl):
     :param baseurl: 小说目录网页
     :return: 地址集合
     """
-    today = timezone.now()
-    urlquery = models.Novel.objects.filter(srcurl=baseurl)
-    if urlquery:
-        updatetime = urlquery.first().updatetime
-        urlquery.update(updatetime=today)
-        novelid = urlquery.first().id
-        if updatetime == today:
-            print('无需下载')
-            return novelid
-        else:
-            try:
-                html = pq(baseurl, headers=header, encoding="utf-8")
-                # 更新小说章节
-                upcontentb(novelid, html)
+    try:
+        today = timezone.now()
+        urlquery = models.Novel.objects.filter(srcurl=baseurl)
+        if urlquery:
+            updatetime = urlquery.first().updatetime
+            urlquery.update(updatetime=today)
+            novelid = urlquery.first().id
+            if updatetime == today:
+                print('无需下载')
                 return novelid
-            except Exception as e:
-                return '出现错误：{}'.format(e)
-    else:
-        html = pq(baseurl, headers=header, encoding="utf-8")
-        name = html('h1').text()
-        content = html('#intro').text()
-        # 小说图片下载
-        imgurl = 'static/images/novel/{}.jpg'.format(stringrandom(name))
-        filepath = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), os.path.normpath(imgurl))
-        if not os.path.isfile(filepath):
-            imgpath = html('#fmimg img').attr("src")
-            if not imgpath:
-                imgpath = html("meta[property='og:image']").attr('content')
-            request.urlretrieve(imgpath, filepath)
+            else:
+                try:
+                    html = htmlencode(baseurl)
+                    # 更新小说章节
+                    upcontentb(novelid, html)
+                    return novelid
+                except Exception as e:
+                    return '出现错误：{}'.format(e)
+        else:
+            html = htmlencode(baseurl)
+            name = html('h1').text()
+            content = html('#intro').text()
+            # 小说图片下载
+            imgurl = 'static/images/novel/{}.jpg'.format(stringrandom(name))
+            filepath = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), os.path.normpath(imgurl))
+            if not os.path.isfile(filepath):
+                imgpath = html('#fmimg img').attr("src")
+                if not imgpath:
+                    imgurl = 'static/images/novel/noimg.jpg'
+                else:
+                    request.urlretrieve(imgpath, filepath)
 
-        novel_dict = {'name': name,
-                      'content': content,
-                      'imgurl': imgurl,
-                      'srcurl': baseurl,
-                      'updatetime': today,
-                      'status': 1
-                      }
-        obj = models.Novel.objects.create(**novel_dict)
-        # 小说编号
-        novelid = obj.id
-        # 写入小说章节到novelContent表中
-        upcontentb(novelid, html)
-        return novelid
+            novel_dict = {'name': name,
+                          'content': content,
+                          'imgurl': imgurl,
+                          'srcurl': baseurl,
+                          'updatetime': today,
+                          'status': 1
+                          }
+            obj = models.Novel.objects.create(**novel_dict)
+            # 小说编号
+            novelid = obj.id
+            # 写入小说章节到novelContent表中
+            upcontentb(novelid, html)
+            return novelid
+    except Exception:
+        traceback.print_exc()
 
 
 def upcontentb(novelid, html):
@@ -193,7 +210,7 @@ def cachedownload(bookid, start=None, end=None):
 
     downlist = [i[0] for i in downquery]
     for num in downlist:
-        novel = pq('{}{}.html'.format(baseurl, num), headers=header, encoding="utf-8")
+        novel = htmlencode('{}{}.html'.format(baseurl, num))
         txt = novel('#content')
         if txt:
             models.NovelContent.objects.filter(novelid__srcurl=baseurl, srcnum=num).update(content=txt, status=1)
@@ -223,9 +240,8 @@ def searchbook(bookname):
     :param bookname: 书名
     :return: 返回网页内容
     """
-    searchurl = 'http://zhannei.baidu.com/cse/search?s=5199337987683747968&ie=utf-8&q={}'. \
-        format(request.quote(bookname))
-    html = pq(searchurl, headers=header, encoding="utf-8")
+    searchurl = 'https://www.xbiquge6.com/search.php?keyword={}'.format(request.quote(bookname))
+    html = htmlencode(searchurl)
     ret = html('.result-item:first')
     return ret
 
